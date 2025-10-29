@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Hub Pro — Admin & Student</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:linear-gradient(180deg,#f6fbff 0%,#eef6ff 100%);--card:#fff;--accent:#0b72b6;--accent2:#16a34a;--muted:#6b7280;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,sans-serif;}
+body{background:var(--bg);}
+.hidden{display:none;}
+.login-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;background:var(--card);padding:28px;border-radius:12px;box-shadow:0 10px 20px rgba(0,0,0,0.1);text-align:center;}
+.login-card input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #cbd5e1;}
+.login-card button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;}
+.login-card button:hover{background:#095aa4;}
+.error{color:red;font-size:13px;margin-bottom:8px;}
+header{background:var(--accent);color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;}
+header button{background:#fff;color:var(--accent);border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;}
+.container{max-width:1100px;margin:28px auto;padding:20px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 18px 40px rgba(11,113,182,0.06);border:1px solid rgba(11,113,182,0.04);}
+.tabs{display:flex;gap:8px;margin-bottom:12px;}
+.tab{padding:10px 14px;border-radius:10px;cursor:pointer;border:1px solid transparent;font-weight:600;}
+.tab.active{background:linear-gradient(90deg,var(--accent),#3b87c6);color:#fff;}
+.layout{display:grid;grid-template-columns:1fr 360px;gap:16px;}
+.question-area{padding:12px;}
+.q-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.progress{height:10px;background:#eaf3ff;border-radius:999px;overflow:hidden;flex:1}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#4aa6ff);width:0%}
+.q-pos{font-size:13px;color:var(--muted)}
+.question{font-weight:700;font-size:18px;margin:12px 0}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;border:1px solid #eef6ff;cursor:pointer;background:linear-gradient(180deg,#fff,#fbfdff)}
+.opt:hover{transform:translateY(-2px);transition:all .12s ease}
+.controls{display:flex;gap:8px;margin-top:14px;align-items:center}
+button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,113,182,0.12)}
+button.green{background:var(--accent2)}
+.side{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #f1f6fb}
+.side h3{margin:0 0 6px 0}
+.side .meta{font-size:13px;color:var(--muted);margin-bottom:8px}
+.yt-btn{display:inline-flex;align-items:center;gap:8px;background:#ff0000;color:#fff;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:700}
+.small{font-size:13px;color:var(--muted)}
+.review-list{max-height:360px;overflow:auto;margin-top:8px}
+.review-item{padding:10px;border-radius:8px;border:1px solid #f1f5f9;margin-bottom:8px;background:#fff}
+.admin-section{margin-top:12px;}
+.admin-section input, .admin-section select{margin:4px 0;padding:6px;width:100%;border-radius:6px;border:1px solid #cbd5e1;}
+</style>
+</head>
+<body>
+
+<!-- Landing -->
+<div class="login-card" id="landingCard">
+<h2>Quiz Hub</h2>
+<button id="adminLoginBtn">Admin Login</button>
+<button id="studentLoginBtn">Student Login</button>
+</div>
+
+<!-- Admin Login -->
+<div class="login-card hidden" id="adminLoginCard">
+<h2>Admin Login</h2>
+<div class="error" id="adminErr"></div>
+<input type="text" id="adminUser" placeholder="Username">
+<input type="password" id="adminPass" placeholder="Password">
+<button id="loginAdminBtn">Login</button>
+<button id="backAdminBtn" style="background:#ccc;color:#000;">Back</button>
+</div>
+
+<!-- Student Login -->
+<div class="login-card hidden" id="studentLoginCard">
+<h2>Student Login</h2>
+<div class="error" id="studentErr"></div>
+<input type="text" id="studentName" placeholder="Enter your name">
+<button id="loginStudentBtn">Login</button>
+<button id="backStudentBtn" style="background:#ccc;color:#000;">Back</button>
+</div>
+
+<!-- App -->
+<div class="hidden" id="appContainer">
+<header>
+<h1>Quiz Hub</h1>
+<button id="logoutBtn">Logout</button>
+</header>
+
+<div class="container card" id="quizApp">
+<div class="tabs" id="tabs">
+  <div class="tab active" data-cat="python">Python</div>
+  <div class="tab" data-cat="sql">SQL</div>
+  <div class="tab" data-cat="c">C Language</div>
+</div>
+
+<div style="margin-bottom:12px">
+<span>Quiz Timer: <strong id="timerDisplay">00:00</strong></span>
+</div>
+
+<div class="layout">
+<main class="question-area">
+<div class="q-head">
+<div class="progress" style="margin-right:12px"><i id="progressBar"></i></div>
+<div class="q-pos small"><span id="qpos">1</span> / <span id="qtotal">15</span></div>
+</div>
+
+<div class="question" id="qtext"></div>
+<div class="opts" id="opts"></div>
+<div class="controls">
+<button class="ghost" id="btnPrev">Previous</button>
+<button id="btnNext">Next</button>
+<button class="green" id="btnSubmit">Submit</button>
+<div style="margin-left:auto" class="small">Answered: <strong id="answeredCount">0</strong></div>
+</div>
+
+<div id="resultBox" style="display:none;margin-top:14px">
+<h3 id="resultHeading">Quiz Result</h3>
+<p class="small">You scored <strong id="finalScore">0</strong> / <span id="finalTotal">15</span></p>
+</div>
+</main>
+
+<aside class="side">
+<h3 id="catTitle">Python</h3>
+<div class="meta" id="catDesc">Curated bank for learning fundamentals</div>
+<a id="ytLink" class="yt-btn" href="#" target="_blank">Watch Course</a>
+
+<div class="admin-section hidden" id="adminSection">
+<h4>Admin Controls</h4>
+<label>Set Timer (minutes)</label>
+<input type="number" id="timerInput" min="1" value="5">
+<button id="btnSetTimer">Update Timer</button>
+<h4>Manage Questions</h4>
+<label>Question Text</label><input type="text" id="newQText">
+<label>Options (comma separated)</label><input type="text" id="newQOpts">
+<label>Correct Option (0-based index)</label><input type="number" id="newQCorrect" min="0">
+<button id="btnAddQ">Add Question</button>
+<div id="adminQuestionsList"></div>
+</div>
+
+<div style="margin-top:12px">
+<h4>Review</h4>
+<div class="review-list" id="reviewList">No previous run</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+
+<script>
+// ---- Login & Role ----
+const landingCard=document.getElementById('landingCard');
+const adminLoginCard=document.getElementById('adminLoginCard');
+const studentLoginCard=document.getElementById('studentLoginCard');
+const appContainer=document.getElementById('appContainer');
+let role=null;
+
+document.getElementById('adminLoginBtn').onclick=()=>{landingCard.classList.add('hidden');adminLoginCard.classList.remove('hidden');};
+document.getElementById('studentLoginBtn').onclick=()=>{landingCard.classList.add('hidden');studentLoginCard.classList.remove('hidden');};
+document.getElementById('backAdminBtn').onclick=()=>{adminLoginCard.classList.add('hidden');landingCard.classList.remove('hidden');};
+document.getElementById('backStudentBtn').onclick=()=>{studentLoginCard.classList.add('hidden');landingCard.classList.remove('hidden');};
+
+document.getElementById('loginAdminBtn').onclick=()=>{
+  const u=document.getElementById('adminUser').value.trim();
+  const p=document.getElementById('adminPass').value.trim();
+  if(u==='admin'&&p==='admin123'){role='admin';startApp();}
+  else document.getElementById('adminErr').textContent='Invalid username/password';
+};
+document.getElementById('loginStudentBtn').onclick=()=>{
+  const name=document.getElementById('studentName').value.trim();
+  if(name){role='student';startApp(name);}
+  else document.getElementById('studentErr').textContent='Enter your name';
+};
+document.getElementById('logoutBtn').onclick=()=>{location.reload();};
+
+// ---- Quiz Data ----
+const DEFAULT={
+python:{title:'Python',yt:'https://www.youtube.com/watch?v=rfscVS0vtbw',questions:[
+{q:"Which keyword is used to define a function?",opts:["func","def","function","create"],correct:1},
+{q:"Output of type([1,2,3])?",opts:["<class 'list'>","<class 'tuple'>","<class 'dict'>","<class 'set'>"],correct:0},
+{q:"How to insert comment?",opts:["// comment","/* comment */","# comment","<!-- comment -->"],correct:2},
+{q:"Which method adds item to list end?",opts:["append()","add()","push()","insert()"],correct:0},
+{q:"Statement for exception handling?",opts:["try/except","do/catch","catch/throw","handle/error"],correct:0},
+{q:"Python immutable type?",opts:["list","set","tuple","dict"],correct:2},
+{q:"len('hello') returns?",opts:["4","5","6","Error"],correct:1},
+{q:"Operator for exponentiation?",opts:["^","**","exp()","pow"],correct:1},
+{q:"Open file for reading?",opts:["open('file','r')","open('file','w')","open('file','a')","open('file','x')"],correct:0},
+{q:"Loop over list items?",opts:["for item in list:","foreach(list)","while(list)","loop list:"],correct:0},
+{q:"Keyword for anonymous function?",opts:["lambda","anon","func","def"],correct:0},
+{q:"Convert string to int?",opts:["int()","str()","float()","toInt()"],correct:0},
+{q:"Module for regex?",opts:["regex","re","regexp","pyre"],correct:1},
+{q:"Create virtual environment?",opts:["python -m venv env","python venv create env","venv create","mkvirtualenv env"],correct:0},
+{q:"Common package manager?",opts:["npm","pip","gem","maven"],correct:1}
+]},
+sql:{title:'SQL',yt:'https://www.youtube.com/watch?v=HXV3zeQKqGY',questions:[
+{q:"Retrieve rows from table?",opts:["GET","EXTRACT","SELECT","SHOW"],correct:2},
+{q:"Clause to filter rows?",opts:["WHERE","GROUP BY","HAVING","ORDER BY"],correct:0},
+{q:"Create table command?",opts:["CREATE TABLE","MAKE TABLE","NEW TABLE","TABLE CREATE"],correct:0},
+{q:"Remove rows?",opts:["DROP","DELETE","REMOVE","TRUNCATE"],correct:1},
+{q:"Keyword to join tables?",opts:["UNION","JOIN","MERGE","COMBINE"],correct:1},
+{q:"Clause to group rows?",opts:["GROUP BY","ORDER BY","HAVING","WHERE"],correct:0},
+{q:"Function to count rows?",opts:["COUNT()","SUM()","TOTAL()","NUMBER()"],correct:0},
+{q:"Operator for pattern matching?",opts:["LIKE","MATCH","REGEXP","SIMILAR"],correct:0},
+{q:"Keyword to sort results?",opts:["ORDER BY","SORT BY","ARRANGE","GROUP BY"],correct:0},
+{q:"Command to change table structure?",opts:["ALTER TABLE","MODIFY TABLE","CHANGE TABLE","UPDATE TABLE"],correct:0},
+{q:"SQL stands for?",opts:["Structured Query Language","Simple Query Language","Sequential Query Language","Standard Query Language"],correct:0},
+{q:"Constraint for unique?",opts:["PRIMARY KEY","UNIQUE","NOT NULL","CHECK"],correct:1},
+{q:"Select distinct?",opts:["SELECT UNIQUE","SELECT DISTINCT","SELECT ONLY","SELECT DIFFERENT"],correct:1},
+{q:"Filter groups after GROUP BY?",opts:["WHERE","HAVING","FILTER","POST"],correct:1},
+{q:"Remove table command?",opts:["DELETE TABLE","TRUNCATE TABLE","DROP TABLE","REMOVE TABLE"],correct:2}
+]},
+c:{title:'C Language',yt:'https://www.youtube.com/watch?v=KJgsSFOSQv0',questions:[
+{q:"Who created C?",opts:["Bjarne Stroustrup","Dennis Ritchie","James Gosling","Ken Thompson"],correct:1},
+{q:"Header for printf?",opts:["<iostream>","<stdio.h>","<conio.h>","<io.h>"],correct:1},
+{q:"Correct main signature?",opts:["int main()","main()","void main(int)","start main()"],correct:0},
+{q:"Operator to dereference pointer?",opts:["&","*","->","%"],correct:1},
+{q:"Loop executes at least once?",opts:["for","while","do...while","if"],correct:2},
+{q:"Allocate dynamic memory?",opts:["malloc()","alloc()","new","memalloc()"],correct:0},
+{q:"Single-line comment symbol?",opts:["//","/* */","#","--"],correct:0},
+{q:"Function terminates program?",opts:["exit()","stop()","end()","terminate()"],correct:0},
+{q:"Header for malloc/free?",opts:["<stdlib.h>","<malloc.h>","<memory.h>","<alloc.h>"],correct:0},
+{q:"Operator for size in bytes?",opts:["size()","sizeof","len()","bytesof"],correct:1},
+{q:"Default file extension?",opts:[".cpp",".c",".cc",".csrc"],correct:1},
+{q:"NOT a storage class?",opts:["auto","register","volatile","static"],correct:2},
+{q:"Bitwise AND operator?",opts:["&","|","^","~"],correct:0},
+{q:"Function reads formatted input?",opts:["scanf()","gets()","read()","input()"],correct:0},
+{q:"Header for string functions?",opts:["<strings.h>","<string.h>","<strlib.h>","<cstring>"],correct:1}
+]}
+};
+
+let currentCat='python',bank=[],answers=[],idx=0,timer=null,timeLeft=300;
+
+// ---- Start App ----
+function startApp(name=''){
+landingCard.classList.add('hidden');
+adminLoginCard.classList.add('hidden');
+studentLoginCard.classList.add('hidden');
+appContainer.classList.remove('hidden');
+
+bank=JSON.parse(JSON.stringify(DEFAULT[currentCat].questions));
+answers=Array(bank.length).fill(null);
+render(idx);
+updateProgress();
+document.getElementById('catTitle').textContent=DEFAULT[currentCat].title;
+document.getElementById('ytLink').href=DEFAULT[currentCat].yt;
+
+// Admin
+if(role==='admin')document.getElementById('adminSection').classList.remove('hidden');
+else document.getElementById('adminSection').classList.add('hidden');
+
+startTimer(timeLeft);
+}
+
+// ---- Tabs ----
+document.getElementById('tabs').addEventListener('click',e=>{
+const t=e.target.closest('.tab');if(!t) return; switchCat(t.dataset.cat);
+});
+function switchCat(cat){
+currentCat=cat;bank=JSON.parse(JSON.stringify(DEFAULT[cat].questions));answers=Array(bank.length).fill(null);idx=0;
+document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
+document.getElementById('catTitle').textContent=DEFAULT[cat].title;
+document.getElementById('ytLink').href=DEFAULT[cat].yt;
+render(idx);updateProgress();
+}
+
+// ---- Render ----
+const qtext=document.getElementById('qtext'),optsEl=document.getElementById('opts'),qpos=document.getElementById('qpos'),qtotal=document.getElementById('qtotal'),progressBar=document.getElementById('progressBar'),answeredCount=document.getElementById('answeredCount'),resultBox=document.getElementById('resultBox'),finalScoreEl=document.getElementById('finalScore'),finalTotalEl=document.getElementById('finalTotal');
+
+function render(i){
+idx=Math.max(0,Math.min(i,bank.length-1));
+qpos.textContent=idx+1;qtotal.textContent=bank.length;qtext.textContent=bank[idx].q;
+optsEl.innerHTML='';
+bank[idx].opts.forEach((o,j)=>{
+const label=document.createElement('label');label.className='opt';
+const radio=document.createElement('input');radio.type='radio';radio.name='ans';radio.value=j;radio.checked=(answers[idx]===j);
+radio.onchange=()=>{answers[idx]=j;updateAnsweredCount();updateProgress();}
+label.appendChild(radio);const span=document.createElement('span');span.textContent=o;label.appendChild(span);optsEl.appendChild(label);
+});
+document.getElementById('btnPrev').disabled=idx===0;
+document.getElementById('btnNext').textContent=(idx===bank.length-1)?'Finish':'Next';
+}
+function updateAnsweredCount(){answeredCount.textContent=answers.filter(a=>a!==null).length;}
+function updateProgress(){const pct=Math.round((answers.filter(a=>a!==null).length/bank.length)*100);progressBar.style.width=pct+'%';}
+
+// ---- Buttons ----
+document.getElementById('btnPrev').onclick=()=>{if(idx>0)render(idx-1);}
+document.getElementById('btnNext').onclick=()=>{if(idx<bank.length-1)render(idx+1);else submit();}
+document.getElementById('btnSubmit').onclick=submit;
+
+function submit(){
+let score=0;bank.forEach((q,i)=>{if(answers[i]===q.correct)score++;});
+finalScoreEl.textContent=score;finalTotalEl.textContent=bank.length;resultBox.style.display='';
+}
+
+// ---- Timer ----
+function startTimer(sec){clearInterval(timer);let t=sec;updateTimerDisplay(t);timer=setInterval(()=>{t--;if(t<0){clearInterval(timer);submit();alert('Time up!');}updateTimerDisplay(t);},1000);}
+function updateTimerDisplay(sec){const m=Math.floor(sec/60).toString().padStart(2,'0');const s=(sec%60).toString().padStart(2,'0');document.getElementById('timerDisplay').textContent=`${m}:${s}`;}
+document.getElementById('btnSetTimer').onclick=()=>{
+let t=parseInt(document.getElementById('timerInput').value);if(isNaN(t)||t<1){alert('Enter valid minutes');return;}
+timeLeft=t*60;startTimer(timeLeft);
+}
+
+// ---- Admin Add Question ----
+document.getElementById('btnAddQ').onclick=()=>{
+let q=document.getElementById('newQText').value.trim();
+let opts=document.getElementById('newQOpts').value.split(',').map(s=>s.trim());
+let c=parseInt(document.getElementById('newQCorrect').value);
+if(!q||opts.length<2||isNaN(c)||c<0||c>=opts.length){alert('Invalid input');return;}
+bank.push({q,opts,correct:c});render(idx);alert('Question added');document.getElementById('newQText').value='';document.getElementById('newQOpts').value='';document.getElementById('newQCorrect').value='0';
+}
+
+// ---- Keyboard ----
+document.addEventListener('keydown',e=>{
+if(e.key==='ArrowLeft')document.getElementById('btnPrev').click();
+if(e.key==='ArrowRight')document.getElementById('btnNext').click();
+});
+</script>
+</body>
+</html>
